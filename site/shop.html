@@ -1,0 +1,208 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Shop — Surplus & Asset Liquidations Warehouse Outlet</title>
+<meta name="description" content="Name-brand bedding, clothing and window coverings at 45% of the original store price. Photos, sizes and prices for everything we have listed.">
+<link rel="canonical" href="https://liquidations.city/shop">
+<meta property="og:url" content="https://liquidations.city/shop">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Surplus &amp; Asset Liquidations Warehouse Outlet">
+<meta property="og:title" content="Shop — Surplus &amp; Asset Liquidations Warehouse Outlet">
+<meta property="og:description" content="Name-brand bedding, clothing and window coverings at 45% of the original store price. Photos, sizes and prices for everything we have listed.">
+<meta property="og:image" content="https://liquidations.city/assets/stamp-ink.png">
+<meta name="twitter:card" content="summary">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Anton&family=Barlow:wght@400;500;600&family=Barlow+Condensed:wght@500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/site.css">
+<link rel="icon" href="assets/stamp-ink.png">
+<script>document.documentElement.className+=" js";</script>
+</head>
+<body>
+
+<header class="topbar">
+  <div class="wrap">
+    <a class="brandmark" href="index.html">
+      <img src="assets/stamp-light.png" alt="Surplus &amp; Asset Liquidations Warehouse Outlet">
+      <span>Wichita, KS</span>
+    </a>
+    <nav class="nav" aria-label="Main">
+      <a href="shop.html" class="is-current">Shop</a>
+      <a href="index.html#buy">How to buy</a>
+      <a href="index.html#visit">Visit us</a>
+      <a href="manifest.html">Full manifest</a>
+    </nav>
+  </div>
+</header>
+
+<main class="band" style="padding-top:clamp(32px,5vw,60px)">
+  <div class="wrap">
+    <p class="eyebrow">Wichita, Kansas &middot; pickup at the warehouse</p>
+    <h1 style="margin:10px 0 14px">Shop</h1>
+    <p class="lede" style="margin:0 0 26px">Everything here is new or like new, and priced at 45% of what the department store charged. Tap anything for more photos and the details.</p>
+
+    <div class="cats" id="cats" role="group" aria-label="Category">
+      <button type="button" class="cat is-on" data-cat="">Everything <span></span></button><button type="button" class="cat" data-cat="clothing">Clothing <span></span></button><button type="button" class="cat" data-cat="window">Curtains, rods &amp; blinds <span></span></button><button type="button" class="cat" data-cat="bedding">Bedding <span></span></button>
+    </div>
+
+    <div class="shopbar">
+      <div class="field shopbar-q">
+        <label for="q">Search</label>
+        <input type="search" id="q" placeholder="Try queen, comforter, dress, black…" autocomplete="off">
+      </div>
+      <div class="field">
+        <label for="size">Size</label>
+        <select id="size"><option value="">Any size</option></select>
+      </div>
+      <div class="field">
+        <label for="sort">Sort</label>
+        <select id="sort">
+          <option value="new">Newest first</option>
+          <option value="low">Price, low to high</option>
+          <option value="high">Price, high to low</option>
+          <option value="save">Biggest saving</option>
+        </select>
+      </div>
+    </div>
+
+    <p class="tiny shopcount" id="count"></p>
+    <div class="pgrid" id="grid"></div>
+    <div id="none" class="empty" hidden>
+      <p class="tiny" style="letter-spacing:.2em">Nothing matches that yet</p>
+      <p style="margin:0">Try a different word or size, or <button type="button" class="linkbtn" id="reset">show everything</button>.</p>
+    </div>
+
+    <div class="shopmore">
+      <h2 style="font-size:clamp(22px,2.6vw,30px);margin:0 0 8px">Not seeing it?</h2>
+      <p style="margin:0">We put new pieces up as we photograph them, and there are about 1,866 units on the floor in all. Come by and look, or search the <a href="manifest.html">full manifest</a> to see every line that came in.</p>
+    </div>
+  </div>
+</main>
+
+<script src="assets/items.js"></script>
+<script src="data/details.js"></script>
+<script src="data/live.js"></script>
+<script src="assets/liq.js"></script>
+
+<script>
+(function(){
+  var grid = document.getElementById('grid'), none = document.getElementById('none'),
+      count = document.getElementById('count'), q = document.getElementById('q'),
+      size = document.getElementById('size'), sort = document.getElementById('sort');
+  var params = new URLSearchParams(location.search);
+  var cat = params.get('cat') || '';
+  var all = LIQ.shopItems(false);
+
+  /* plain words a shopper might type, matched against everything we know */
+  var WORDS = {comforter:'CMF', quilt:'QLT', sheet:'SHT', king:'KG', queen:'QN', twin:'TW',
+               blind:'BLIND', shade:'SHD', curtain:'PNL', rod:'RD'};
+  function hay(it){
+    var d = LIQ.detail(it[0]);
+    return [d.title, d.brand, d.size, d.color, d.notes, it[2], it[5], it[6], it[0],
+            LIQ.lot(it).shop].join(' ').toLowerCase();
+  }
+  var HAY = {}; all.forEach(function(it){ HAY[it[0]] = hay(it); });
+
+  function sizesOf(it){
+    var d = LIQ.detail(it[0]), out = [];
+    if (d.size) out.push(String(d.size).trim());
+    return out;
+  }
+  var seen = {};
+  all.forEach(function(it){ sizesOf(it).forEach(function(s){ seen[s] = (seen[s] || 0) + 1; }); });
+  Object.keys(seen).sort(function(a, b){
+    var na = parseFloat(a), nb = parseFloat(b);
+    if (!isNaN(na) && !isNaN(nb)) return na - nb;
+    return a.localeCompare(b);
+  }).forEach(function(s){ size.appendChild(new Option(s + ' (' + seen[s] + ')', s)); });
+
+  function counts(){
+    var n = {'': all.length};
+    all.forEach(function(it){ var c = LIQ.lot(it).cat; n[c] = (n[c] || 0) + 1; });
+    document.querySelectorAll('#cats .cat').forEach(function(b){
+      var c = b.dataset.cat;
+      b.querySelector('span').textContent = n[c] || 0;
+      b.hidden = !n[c] && c !== '';
+      b.classList.toggle('is-on', c === cat);
+      b.setAttribute('aria-pressed', c === cat);
+    });
+  }
+
+  function render(){
+    var words = q.value.trim().toLowerCase().split(/\s+/).filter(Boolean), sz = size.value;
+    var view = all.filter(function(it){
+      if (cat && LIQ.lot(it).cat !== cat) return false;
+      if (sz && sizesOf(it).indexOf(sz) < 0) return false;
+      return words.every(function(w){
+        var h = HAY[it[0]];
+        return h.indexOf(w) >= 0 || (WORDS[w] && h.indexOf(WORDS[w].toLowerCase()) >= 0) ||
+               (w.length > 3 && w.slice(-1) === 's' && h.indexOf(w.slice(0, -1)) >= 0);
+      });
+    });
+    var s = sort.value;
+    if (s === 'low') view.sort(function(a, b){ return LIQ.price(a) - LIQ.price(b); });
+    if (s === 'high') view.sort(function(a, b){ return LIQ.price(b) - LIQ.price(a); });
+    if (s === 'save') view.sort(function(a, b){ return (b[4] - LIQ.price(b)) - (a[4] - LIQ.price(a)); });
+    grid.innerHTML = view.map(LIQ.card).join('');
+    none.hidden = view.length > 0;
+    count.textContent = view.length + (view.length === 1 ? ' item' : ' items');
+    var u = new URL(location.href);
+    cat ? u.searchParams.set('cat', cat) : u.searchParams.delete('cat');
+    history.replaceState(null, '', u);
+  }
+
+  document.getElementById('cats').addEventListener('click', function(e){
+    var b = e.target.closest('.cat'); if (!b) return;
+    cat = b.dataset.cat; counts(); render();
+  });
+  document.getElementById('reset').addEventListener('click', function(){
+    cat = ''; q.value = ''; size.value = ''; counts(); render();
+  });
+  [q, size, sort].forEach(function(el){ el.addEventListener('input', render); });
+  counts(); render();
+})();
+</script>
+
+<footer class="foot">
+  <div class="wrap">
+    <div class="foot-grid">
+      <div style="max-width:320px">
+        <img src="assets/stamp-light.png" alt="Surplus &amp; Asset Liquidations Warehouse Outlet" style="width:100%;max-width:280px;display:block;margin-bottom:18px">
+        <p style="font-size:14.5px;margin:0">Surplus, returns and asset lots, bought by the pallet and sold off the floor in Wichita, Kansas.</p>
+      </div>
+      <div>
+        <p class="eyebrow eyebrow--pale">Three doors, one warehouse</p>
+        <ul class="doors">
+          <li><b>liquidations.city</b><span>The storefront. What is on the floor right now, and the manifest behind it.</span></li>
+          <li><b>liquidations.club</b><span>The buyer list. New lots posted here before they hit the floor.</span></li>
+          <li><b>liquidations.zone</b><span>Pallet and truckload sales for resellers and flea-market sellers.</span></li>
+        </ul>
+      </div>
+    </div>
+    <div class="foot-legal">
+      <span>&copy; 2026 Surplus &amp; Asset Liquidations Warehouse Outlet</span>
+      <span>All goods sold as-is. Manifest retail is the original store ticket, not an appraisal.</span>
+    </div>
+  </div>
+</footer>
+
+<script>
+(function(){
+  var rm = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  var hits = document.querySelectorAll('.hit');
+  if (rm || !('IntersectionObserver' in window)) {
+    hits.forEach(function(el){ el.classList.add('in'); });
+    return;
+  }
+  var io = new IntersectionObserver(function(entries){
+    entries.forEach(function(e){
+      if (e.isIntersecting){ e.target.classList.add('in'); io.unobserve(e.target); }
+    });
+  }, {rootMargin:'0px 0px -12% 0px'});
+  hits.forEach(function(el){ io.observe(el); });
+})();
+</script>
+</body>
+</html>

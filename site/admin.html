@@ -1,0 +1,466 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="robots" content="noindex, nofollow">
+<meta name="theme-color" content="#0A1524">
+<title>Item editor — Liquidations</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Anton&family=Barlow:wght@400;500;600&family=Barlow+Condensed:wght@500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/site.css">
+<link rel="icon" href="assets/stamp-ink.png">
+<style>
+  body{padding-bottom:110px}
+  .ed-top{position:sticky; top:0; z-index:20; background:var(--ink); color:var(--paper); border-bottom:3px solid var(--gold-lit)}
+  .ed-top .wrap{display:flex; align-items:center; gap:12px; min-height:56px; padding-inline:16px}
+  .ed-top h1{font-size:20px; color:var(--paper); margin:0; flex:1; letter-spacing:.02em}
+  .ed-top a,.ed-top button{color:#B9C6D6; background:none; border:0; font:600 13px "Barlow Condensed",sans-serif; letter-spacing:.14em; text-transform:uppercase; text-decoration:none; padding:8px 4px; cursor:pointer}
+  .ed{max-width:760px; margin:0 auto; padding:18px 16px}
+  .ed h2{font-size:22px; margin:26px 0 10px}
+  .ed .field{margin-bottom:14px}
+  .ed input[type=text],.ed input[type=search],.ed input[type=number],.ed input[type=password],.ed select,.ed textarea{
+    width:100%; box-sizing:border-box; font:16px "Barlow",sans-serif; padding:11px 12px; border:2px solid var(--ink); background:#fff; color:var(--ink); border-radius:0}
+  .ed textarea{min-height:92px; resize:vertical}
+  .big{display:flex; align-items:center; justify-content:center; gap:10px; width:100%; min-height:58px; font-size:16px; text-align:center}
+  .row2{display:grid; grid-template-columns:1fr 1fr; gap:12px}
+  .muted{color:#5A6B80}
+  .hint{font-size:14px; color:#5A6B80; margin:4px 0 0}
+  .seg{display:grid; grid-template-columns:repeat(3,1fr); border:2.5px solid var(--ink)}
+  .seg button{font:700 14px "Barlow Condensed",sans-serif; text-transform:uppercase; letter-spacing:.12em; padding:12px 6px; border:0; border-right:2px solid var(--ink); background:var(--paper); cursor:pointer}
+  .seg button:last-child{border-right:0}
+  .seg button.on{background:var(--ink); color:var(--paper)}
+  .seg button.on[data-v=sold]{background:var(--red)}
+  .results{list-style:none; margin:0; padding:0; border:2.5px solid var(--ink); background:#fff}
+  .results li{border-bottom:1px solid rgba(10,21,36,.15)}
+  .results li:last-child{border-bottom:0}
+  .results button{display:grid; grid-template-columns:56px 1fr auto; gap:12px; align-items:center; width:100%; text-align:left; background:none; border:0; padding:10px 12px; cursor:pointer; font:inherit; color:inherit}
+  .results button:active{background:var(--manila)}
+  .th{width:56px; height:56px; background:var(--manila); display:flex; align-items:center; justify-content:center; overflow:hidden; font:500 10px "IBM Plex Mono",monospace; color:#8A94A2}
+  .th img{width:100%; height:100%; object-fit:cover}
+  .r1{font:500 14px "IBM Plex Mono",monospace}
+  .r2{font-size:14px; color:#3A4C63; line-height:1.3}
+  .r3{font:500 13px "IBM Plex Mono",monospace; color:var(--gold); text-align:right; white-space:nowrap}
+  .chips{display:flex; gap:8px; overflow-x:auto; margin:0 0 12px; scrollbar-width:none}
+  .chips .cat{min-height:40px; padding:6px 12px; font-size:13px}
+  .toggle{display:flex; align-items:center; gap:10px; font-size:15px; margin:4px 0 14px}
+  .toggle input{width:22px; height:22px}
+  .photos{display:grid; grid-template-columns:repeat(3,1fr); gap:10px; margin-bottom:12px}
+  .ph{position:relative; aspect-ratio:1; background:var(--manila); border:2px solid var(--ink); overflow:hidden}
+  .ph img{width:100%; height:100%; object-fit:cover; display:block}
+  .ph .lead{position:absolute; left:0; top:0; background:var(--gold-lit); font:700 11px "Barlow Condensed",sans-serif; letter-spacing:.12em; text-transform:uppercase; padding:3px 7px}
+  .ph .tools{position:absolute; left:0; right:0; bottom:0; display:flex; justify-content:space-between; background:rgba(10,21,36,.75)}
+  .ph .tools button{flex:1; background:none; border:0; color:#fff; font-size:18px; padding:8px 0; cursor:pointer}
+  .ph.busy::after{content:"Uploading…"; position:absolute; inset:0; display:flex; align-items:center; justify-content:center; background:rgba(246,243,238,.8); font:700 12px "Barlow Condensed",sans-serif; letter-spacing:.12em; text-transform:uppercase}
+  .ph.err::after{content:"Failed — tap ✕"; position:absolute; inset:0; display:flex; align-items:center; justify-content:center; background:rgba(163,48,29,.85); color:#fff; font:700 12px "Barlow Condensed",sans-serif; letter-spacing:.12em; text-transform:uppercase}
+  .addrow{display:grid; grid-template-columns:1fr 1fr; gap:12px}
+  .filebtn{position:relative; overflow:hidden}
+  .filebtn input{position:absolute; inset:0; opacity:0; cursor:pointer; font-size:0}
+  .savebar{position:fixed; left:0; right:0; bottom:0; z-index:30; background:var(--paper); border-top:2.5px solid var(--ink); padding:12px 16px calc(12px + env(safe-area-inset-bottom))}
+  .savebar .in{max-width:760px; margin:0 auto; display:flex; gap:12px}
+  .savebar .btn{flex:1; text-align:center}
+  .head{border:2.5px solid var(--ink); background:var(--manila); padding:14px 16px}
+  .head .r1{font-size:15px}
+  .head p{margin:4px 0 0}
+  .toast{position:fixed; left:50%; bottom:96px; transform:translateX(-50%); background:var(--ink); color:var(--paper); padding:12px 18px; font-size:15px; z-index:40; max-width:90vw; box-shadow:4px 4px 0 rgba(10,21,36,.25)}
+  .inboxgrid{display:grid; grid-template-columns:repeat(4,1fr); gap:8px}
+  .inboxgrid button{padding:0; border:2px solid var(--ink); aspect-ratio:1; overflow:hidden; background:var(--manila); cursor:pointer}
+  .inboxgrid button.on{outline:4px solid var(--gold-lit); outline-offset:-4px}
+  .inboxgrid img{width:100%; height:100%; object-fit:cover; display:block}
+  .banner{border:2.5px solid var(--gold); background:#FFF8E6; padding:12px 14px; margin-bottom:16px; font-size:15px}
+  .sheet{position:fixed; inset:0; z-index:50; background:rgba(10,21,36,.6); display:flex; align-items:flex-end}
+  .sheet .in{background:var(--paper); width:100%; max-height:85vh; overflow:auto; padding:18px 16px calc(18px + env(safe-area-inset-bottom)); border-top:3px solid var(--gold-lit)}
+</style>
+</head>
+<body>
+<header class="ed-top"><div class="wrap">
+  <h1 id="ttl">Item editor</h1>
+  <button type="button" id="homebtn" hidden>All items</button>
+  <a href="shop.html" target="_blank" rel="noopener">Shop &#8599;</a>
+</div></header>
+<main class="ed" id="app"></main>
+<div id="toast" class="toast" hidden></div>
+
+<script src="assets/items.js"></script>
+<script src="data/details.js"></script>
+<script src="assets/liq.js"></script>
+<script>
+(function(){
+  var app = document.getElementById('app'), esc = LIQ.esc;
+  var KEY = 'liq-admin-key';
+  var key = '';
+  try { key = localStorage.getItem(KEY) || ''; } catch (e) {}
+  var STATIC = window.LIQ_DETAILS || {};
+  var LIVE = {};          /* sku -> {record, private, updated} from the server */
+  var INBOX = [];
+  var list = {q:'', lot:'', todo:true};
+  var filing = null;      /* inbox photo being filed to an item */
+
+  function toast(t, ms){
+    var el = document.getElementById('toast'); el.textContent = t; el.hidden = false;
+    clearTimeout(toast.t); toast.t = setTimeout(function(){ el.hidden = true; }, ms || 2600);
+  }
+  function api(path, opt){
+    opt = opt || {}; opt.headers = Object.assign({'x-admin-key': key}, opt.headers || {});
+    return fetch('/api/admin/' + path, opt).then(function(r){
+      return r.json().catch(function(){ return {}; }).then(function(b){
+        if (!r.ok){ var e = new Error(b.message || b.error || ('HTTP ' + r.status)); e.code = b.error; e.status = r.status; throw e; }
+        return b;
+      });
+    });
+  }
+  function rec(sku){ return LIVE[sku] ? LIVE[sku].record : (STATIC[sku] || {}); }
+  function photosOf(sku){ var r = rec(sku); return (r.photos || []); }
+  function stateOf(sku){
+    var r = rec(sku);
+    if (r.status === 'sold' || r.status === 'hold') return r.status;
+    return (r.photos && r.photos.length) ? 'listed' : 'todo';
+  }
+
+  /* ---------------- sign in ---------------- */
+  function login(msg){
+    document.getElementById('homebtn').hidden = true;
+    app.innerHTML =
+      '<h2>Sign in</h2>' +
+      (msg ? '<div class="banner">' + esc(msg) + '</div>' : '') +
+      '<p class="muted">Enter the editor password. This phone will remember it.</p>' +
+      '<form id="lf"><div class="field"><label for="pw">Password</label>' +
+      '<input type="password" id="pw" autocomplete="current-password" required></div>' +
+      '<button class="btn big" type="submit">Sign in</button></form>';
+    document.getElementById('lf').addEventListener('submit', function(e){
+      e.preventDefault(); key = document.getElementById('pw').value;
+      start();
+    });
+  }
+
+  function start(){
+    app.innerHTML = '<p class="muted">Loading…</p>';
+    api('state').then(function(s){
+      try { localStorage.setItem(KEY, key); } catch (e) {}
+      LIVE = s.items || {}; INBOX = s.inbox || [];
+      route();
+    }, function(e){
+      if (e.code === 'not_set_up') return notSetUp();
+      if (e.status === 401){ try { localStorage.removeItem(KEY); } catch (x) {} return login(key ? 'That password did not work.' : ''); }
+      if (e.status === 404 || e.status === 405) return notSetUp();
+      login('Could not reach the site: ' + e.message);
+    });
+  }
+  function notSetUp(){
+    app.innerHTML = '<h2>Not connected yet</h2><div class="banner">The editor needs a database and a password set in Cloudflare before it can save. ' +
+      'The steps are in <b>EDITOR-SETUP.md</b>, about ten minutes, once.</div>' +
+      '<p class="muted">Until then the public site works exactly as uploaded.</p>';
+  }
+
+  /* ---------------- routing ---------------- */
+  window.addEventListener('hashchange', route);
+  function route(){
+    var m = location.hash.match(/^#item\/(\d{4}-\d{4})$/);
+    if (m && LIQ.bySku(m[1])) return editor(m[1]);
+    home();
+  }
+  document.getElementById('homebtn').addEventListener('click', function(){ location.hash = ''; });
+
+  /* ---------------- home: find an item ---------------- */
+  function home(){
+    document.getElementById('ttl').textContent = 'Item editor';
+    document.getElementById('homebtn').hidden = true;
+    var lots = Object.keys(LIQ.LOTS);
+    app.innerHTML =
+      (filing ? '<div class="banner"><b>Filing a photo.</b> Pick the item it belongs to. <button type="button" class="linkbtn" id="cancelfile">Cancel</button></div>' : '') +
+      (filing ? '' :
+      '<div class="filebtn btn big" style="margin-bottom:10px">Snap photos now, match later' +
+        '<input type="file" accept="image/*" multiple id="snap"></div>' +
+      '<p class="hint" style="margin-bottom:6px">Photos go to the inbox below. File each one to an item when you have a minute.</p>') +
+      (INBOX.length && !filing ? '<h2>Inbox <span class="muted" style="font-size:16px">' + INBOX.length + ' to file</span></h2>' +
+        '<div class="inboxgrid" id="inbox">' + INBOX.map(function(p){
+          return '<button type="button" data-id="' + p.id + '"><img src="' + esc(p.path) + '" alt=""></button>'; }).join('') + '</div>' : '') +
+      '<h2>Find the item</h2>' +
+      '<div class="field"><input type="search" id="q" placeholder="Word from the tag, brand, or item # (0858-0012)" value="' + esc(list.q) + '" autocomplete="off"></div>' +
+      '<div class="chips" id="lots"><button type="button" class="cat' + (list.lot ? '' : ' is-on') + '" data-lot="">All</button>' +
+        lots.map(function(l){ return '<button type="button" class="cat' + (list.lot === l ? ' is-on' : '') + '" data-lot="' + l + '">' + esc(LIQ.LOTS[l].name) + '</button>'; }).join('') + '</div>' +
+      '<label class="toggle"><input type="checkbox" id="todo"' + (list.todo ? ' checked' : '') + '> Only items without photos</label>' +
+      '<ul class="results" id="res"></ul><p class="hint" id="rescount"></p>' +
+      '<h2>Backup</h2><p class="hint">Download everything edited on the phone, private notes included. <button type="button" class="linkbtn" id="exp">Download backup</button></p>';
+
+    var q = document.getElementById('q');
+    q.addEventListener('input', function(){ list.q = q.value; results(); });
+    document.getElementById('lots').addEventListener('click', function(e){
+      var b = e.target.closest('.cat'); if (!b) return;
+      list.lot = b.dataset.lot; home();
+    });
+    document.getElementById('todo').addEventListener('change', function(e){ list.todo = e.target.checked; results(); });
+    document.getElementById('res').addEventListener('click', function(e){
+      var b = e.target.closest('button[data-sku]'); if (!b) return;
+      location.hash = 'item/' + b.dataset.sku;
+    });
+    document.getElementById('exp').addEventListener('click', function(){
+      api('export').then(function(rows){
+        var a = document.createElement('a');
+        a.href = URL.createObjectURL(new Blob([JSON.stringify(rows, null, 2)], {type: 'application/json'}));
+        a.download = 'liquidations-phone-edits-' + new Date().toISOString().slice(0, 10) + '.json';
+        a.click();
+      }, function(e){ toast('Backup failed: ' + e.message); });
+    });
+    var snap = document.getElementById('snap');
+    if (snap) snap.addEventListener('change', function(){
+      var files = [].slice.call(snap.files); snap.value = '';
+      if (!files.length) return;
+      toast('Uploading ' + files.length + (files.length > 1 ? ' photos…' : ' photo…'), 60000);
+      var done = 0;
+      files.reduce(function(p, f){
+        return p.then(function(){ return upload(f, 'inbox=1'); }).then(function(r){
+          INBOX.unshift({id: r.id, path: r.path, created: Date.now()}); done++;
+        });
+      }, Promise.resolve()).then(function(){ toast(done + ' added to the inbox'); home(); },
+        function(e){ toast('Upload stopped: ' + e.message, 5000); home(); });
+    });
+    var ib = document.getElementById('inbox');
+    if (ib) ib.addEventListener('click', function(e){
+      var b = e.target.closest('button[data-id]'); if (!b) return;
+      inboxSheet(INBOX.filter(function(p){ return p.id === b.dataset.id; })[0]);
+    });
+    var cf = document.getElementById('cancelfile');
+    if (cf) cf.addEventListener('click', function(){ filing = null; home(); });
+    results();
+  }
+
+  function results(){
+    var t = list.q.trim().toUpperCase(), words = t.split(/\s+/).filter(Boolean);
+    var out = [], all = LIQ_ITEMS;
+    for (var i = 0; i < all.length && out.length < 60; i++){
+      var it = all[i];
+      if (list.lot && it[1] !== list.lot) continue;
+      if (list.todo && stateOf(it[0]) !== 'todo') continue;
+      if (words.length){
+        var r = rec(it[0]);
+        var hay = (it[0] + ' ' + it[2] + ' ' + it[5] + ' ' + it[6] + ' ' + (r.title || '') + ' ' + (r.brand || '')).toUpperCase();
+        if (!words.every(function(w){ return hay.indexOf(w) >= 0; })) continue;
+      }
+      out.push(it);
+    }
+    document.getElementById('res').innerHTML = out.map(function(it){
+      var ph = photosOf(it[0]), r = rec(it[0]), s = stateOf(it[0]);
+      return '<li><button type="button" data-sku="' + it[0] + '">' +
+        '<span class="th">' + (ph.length ? '<img loading="lazy" src="' + esc(ph[0]) + '" alt="">' : 'no<br>photo') + '</span>' +
+        '<span><span class="r1">' + it[0] + ' &middot; ' + esc(it[2]) + '</span><br>' +
+        '<span class="r2">' + esc(r.title || it[5]) + (s === 'sold' ? ' &middot; <b style="color:var(--red)">SOLD</b>' : s === 'hold' ? ' &middot; <b>ON HOLD</b>' : '') + '</span></span>' +
+        '<span class="r3">' + LIQ.usd(it[4]) + '<br>' + LIQ.whole(LIQ.standard(it)) + '</span>' +
+        '</button></li>';
+    }).join('') || '<li style="padding:16px" class="muted">Nothing matches. Try a shorter word: the tags are cut to 16 letters, so CMFT, not comforter.</li>';
+    document.getElementById('rescount').textContent = out.length >= 60 ? 'Showing the first 60. Type more to narrow it.' : out.length + ' shown';
+  }
+
+  function inboxSheet(p){
+    var sh = document.createElement('div'); sh.className = 'sheet';
+    sh.innerHTML = '<div class="in"><img src="' + esc(p.path) + '" alt="" style="width:100%;max-height:50vh;object-fit:contain;background:var(--manila);border:2px solid var(--ink)">' +
+      '<div class="row2" style="margin-top:14px"><button type="button" class="btn" data-a="file">File to an item</button>' +
+      '<button type="button" class="btn btn--ghost" data-a="del">Delete</button></div>' +
+      '<p style="margin:14px 0 0;text-align:center"><button type="button" class="linkbtn" data-a="close">Close</button></p></div>';
+    document.body.appendChild(sh);
+    sh.addEventListener('click', function(e){
+      var a = e.target.dataset && e.target.dataset.a;
+      if (e.target === sh || a === 'close'){ sh.remove(); return; }
+      if (a === 'file'){ sh.remove(); filing = p; list.todo = false; home(); document.getElementById('q').focus(); }
+      if (a === 'del'){
+        if (!confirm('Delete this photo for good?')) return;
+        api('inbox/' + p.id, {method: 'DELETE'}).then(function(){
+          INBOX = INBOX.filter(function(x){ return x.id !== p.id; }); sh.remove(); home();
+        }, function(e){ toast('Could not delete: ' + e.message); });
+      }
+    });
+  }
+
+  /* ---------------- photo resize + upload ---------------- */
+  function shrink(file){
+    var MAX = 1600;
+    var load = window.createImageBitmap
+      ? createImageBitmap(file, {imageOrientation: 'from-image'}).catch(function(){ return createImageBitmap(file); })
+      : new Promise(function(ok, bad){ var i = new Image(); i.onload = function(){ ok(i); }; i.onerror = bad; i.src = URL.createObjectURL(file); });
+    return load.then(function(img){
+      var w = img.width, h = img.height, s = Math.min(1, MAX / Math.max(w, h));
+      var c = document.createElement('canvas'); c.width = Math.round(w * s); c.height = Math.round(h * s);
+      c.getContext('2d').drawImage(img, 0, 0, c.width, c.height);
+      return new Promise(function(ok){ c.toBlob(ok, 'image/jpeg', 0.82); });
+    });
+  }
+  function upload(file, qs){
+    return shrink(file).then(function(blob){
+      return api('photo?' + qs, {method: 'POST', headers: {'content-type': 'image/jpeg'}, body: blob});
+    });
+  }
+
+  /* ---------------- edit one item ---------------- */
+  function editor(sku){
+    var it = LIQ.bySku(sku), base = rec(sku);
+    var draft = JSON.parse(JSON.stringify(base));
+    draft.photos = (draft.photos || []).slice();
+    draft.status = draft.status || 'available';
+    var priv = LIVE[sku] ? (LIVE[sku].private || '') : '';
+    var dirty = false, pending = 0;
+    document.getElementById('ttl').textContent = sku;
+    document.getElementById('homebtn').hidden = false;
+    window.scrollTo(0, 0);
+
+    var conds = ['New — sealed in the original retail bag', 'New in box', 'New with tags',
+                 'Like new — tags attached', 'Like new — retail packaging opened, contents unused',
+                 'Like new — no tags', 'Open box — all parts present', 'Light wear — see photos'];
+    var cond = draft.condition || '';
+    if (cond && conds.indexOf(cond) < 0) conds.push(cond);
+
+    app.innerHTML =
+      '<div class="head"><span class="r1">' + sku + ' &middot; ' + esc(it[2]) + '</span>' +
+      '<p class="r2">' + esc(LIQ.LOTS[it[1]] ? LIQ.LOTS[it[1]].name : it[1]) + ' &middot; ' + esc(it[5]) + (it[6] ? ' — ' + esc(it[6]) : '') + ' &middot; qty ' + it[3] + '</p>' +
+      '<p class="r2">Store ticket <b>' + LIQ.usd(it[4]) + '</b> &middot; our price <b>' + LIQ.whole(LIQ.standard(it)) + '</b></p></div>' +
+
+      (filing ? '<div class="banner" style="margin-top:14px">Adding the inbox photo to this item. Save to finish.</div>' : '') +
+
+      '<h2>Photos</h2><div class="photos" id="ph"></div>' +
+      '<div class="addrow">' +
+        '<div class="filebtn btn">Take photo<input type="file" accept="image/*" capture="environment" id="cam"></div>' +
+        '<div class="filebtn btn btn--ghost">From library<input type="file" accept="image/*" multiple id="lib"></div>' +
+      '</div>' +
+      (INBOX.length && !filing ? '<p class="hint" style="margin-top:10px"><button type="button" class="linkbtn" id="frominbox">Add from inbox (' + INBOX.length + ')</button></p>' : '') +
+      '<p class="hint">First photo leads in the shop. Use the arrows to reorder.</p>' +
+
+      '<h2>Details</h2>' +
+      '<div class="field"><label for="f-title">Name shoppers see</label><input type="text" id="f-title" placeholder="e.g. Madison Park 24-Piece King Comforter Set"></div>' +
+      '<div class="row2"><div class="field"><label for="f-brand">Brand</label><input type="text" id="f-brand"></div>' +
+      '<div class="field"><label for="f-size">Size</label><input type="text" id="f-size" placeholder="King, 14W, M…" list="sizes"></div></div>' +
+      '<datalist id="sizes"><option>Twin</option><option>Twin XL</option><option>Full</option><option>Full/Queen</option><option>Queen</option><option>King</option><option>Cal King</option>' +
+        '<option>XS</option><option>S</option><option>M</option><option>L</option><option>XL</option><option>2XL</option><option>1X</option><option>2X</option><option>3X</option></datalist>' +
+      '<div class="field"><label for="f-color">Color</label><input type="text" id="f-color"></div>' +
+      '<div class="field"><label for="f-cond">Condition</label><select id="f-cond">' +
+        conds.map(function(c){ return '<option' + (c === cond ? ' selected' : '') + '>' + esc(c) + '</option>'; }).join('') + '</select></div>' +
+      '<div class="field"><label for="f-notes">Description</label><textarea id="f-notes" placeholder="What is in the box, what it looks like, anything a shopper would ask"></textarea></div>' +
+
+      '<h2>Status</h2><div class="seg" id="seg">' +
+        '<button type="button" data-v="available">For sale</button><button type="button" data-v="hold">On hold</button><button type="button" data-v="sold">Sold</button></div>' +
+
+      '<h2>Price</h2>' +
+      '<label class="toggle"><input type="checkbox" id="mk"> Mark this one down</label>' +
+      '<div class="field" id="mkf" hidden><label for="f-price">Marked-down price, whole dollars</label><input type="number" id="f-price" inputmode="numeric" min="0" step="1"></div>' +
+
+      '<h2>Private note</h2>' +
+      '<div class="field"><textarea id="f-priv" placeholder="Only you see this. Uncertain matches, where it is on the floor, who it is held for."></textarea>' +
+      '<p class="hint">Never shown on the public site.</p></div>' +
+
+      (LIVE[sku] ? '<p class="hint" style="margin-top:24px"><button type="button" class="linkbtn" id="revert">Undo all phone edits for this item</button></p>' : '') +
+      '<p class="hint"><a href="item.html?sku=' + sku + '" target="_blank" rel="noopener">See the public page &#8599;</a></p>';
+
+    var bar = document.createElement('div'); bar.className = 'savebar';
+    bar.innerHTML = '<div class="in"><button type="button" class="btn" id="save">Save</button>' +
+      '<button type="button" class="btn btn--ghost" id="next">Next item &rarr;</button></div>';
+    app.appendChild(bar);
+
+    var F = {title: 'f-title', brand: 'f-brand', size: 'f-size', color: 'f-color', notes: 'f-notes'};
+    Object.keys(F).forEach(function(k){
+      var el = document.getElementById(F[k]); el.value = draft[k] || '';
+      el.addEventListener('input', function(){ draft[k] = el.value; dirty = true; });
+    });
+    var c = document.getElementById('f-cond');
+    if (!cond) c.selectedIndex = it[1] === 'J0310832' ? 3 : 0;
+    draft.condition = c.value;
+    c.addEventListener('change', function(){ draft.condition = c.value; dirty = true; });
+    var pv = document.getElementById('f-priv'); pv.value = priv;
+    pv.addEventListener('input', function(){ priv = pv.value; dirty = true; });
+
+    var mk = document.getElementById('mk'), mkf = document.getElementById('mkf'), pr = document.getElementById('f-price');
+    mk.checked = typeof draft.price === 'number'; mkf.hidden = !mk.checked;
+    if (mk.checked) pr.value = draft.price;
+    mk.addEventListener('change', function(){ mkf.hidden = !mk.checked; dirty = true; if (!mk.checked) delete draft.price; else pr.focus(); });
+    pr.addEventListener('input', function(){ var n = parseInt(pr.value, 10); if (n >= 0) draft.price = n; else delete draft.price; dirty = true; });
+
+    function seg(){ document.querySelectorAll('#seg button').forEach(function(b){ b.classList.toggle('on', b.dataset.v === draft.status); }); }
+    document.getElementById('seg').addEventListener('click', function(e){
+      var b = e.target.closest('button'); if (!b) return; draft.status = b.dataset.v; dirty = true; seg();
+    });
+    seg();
+
+    /* photos */
+    var ph = document.getElementById('ph');
+    function drawPhotos(){
+      ph.innerHTML = draft.photos.map(function(p, n){
+        var busy = typeof p === 'object';
+        return '<div class="ph' + (busy ? (p.err ? ' err' : ' busy') : '') + '">' +
+          '<img src="' + esc(busy ? p.preview : p) + '" alt="">' + (n === 0 ? '<span class="lead">Leads</span>' : '') +
+          '<div class="tools"><button type="button" data-a="l" data-n="' + n + '" aria-label="Move left">&larr;</button>' +
+          '<button type="button" data-a="x" data-n="' + n + '" aria-label="Remove">&times;</button>' +
+          '<button type="button" data-a="r" data-n="' + n + '" aria-label="Move right">&rarr;</button></div></div>';
+      }).join('') || '<p class="muted" style="grid-column:1/-1;margin:0">No photos yet.</p>';
+    }
+    ph.addEventListener('click', function(e){
+      var b = e.target.closest('button[data-a]'); if (!b) return;
+      var n = +b.dataset.n, a = b.dataset.a, P = draft.photos;
+      if (a === 'x'){ if (typeof P[n] === 'object' && !P[n].err) return; P.splice(n, 1); }
+      if (a === 'l' && n > 0){ var t = P[n-1]; P[n-1] = P[n]; P[n] = t; }
+      if (a === 'r' && n < P.length - 1){ var u = P[n+1]; P[n+1] = P[n]; P[n] = u; }
+      dirty = true; drawPhotos();
+    });
+    function add(files){
+      [].slice.call(files).forEach(function(f){
+        var slot = {preview: URL.createObjectURL(f)};
+        draft.photos.push(slot); pending++; dirty = true; drawPhotos();
+        upload(f, 'sku=' + sku).then(function(r){
+          var i = draft.photos.indexOf(slot); if (i >= 0) draft.photos[i] = r.path;
+        }, function(e){ slot.err = true; toast('A photo did not upload: ' + e.message, 5000); })
+        .then(function(){ pending--; drawPhotos(); });
+      });
+    }
+    ['cam', 'lib'].forEach(function(id){
+      var inp = document.getElementById(id);
+      inp.addEventListener('change', function(){ add(inp.files); inp.value = ''; });
+    });
+    var filed = null;
+    if (filing){ draft.photos.push(filing.path); filed = filing; dirty = true; }
+    var fi = document.getElementById('frominbox');
+    if (fi) fi.addEventListener('click', function(){
+      if (dirty && !confirm('Leave without saving?')) return;
+      list.todo = false; filing = null; location.hash = '';
+      toast('Tap an inbox photo, then "File to an item".', 4000);
+    });
+    drawPhotos();
+
+    var rv = document.getElementById('revert');
+    if (rv) rv.addEventListener('click', function(){
+      if (!confirm('Go back to how this item was before any phone edits?')) return;
+      api('item/' + sku, {method: 'DELETE'}).then(function(){ delete LIVE[sku]; toast('Reverted'); editor(sku); },
+        function(e){ toast('Could not revert: ' + e.message); });
+    });
+
+    function save(){
+      if (pending) { toast('Wait for the photos to finish uploading.'); return Promise.reject(); }
+      if (draft.photos.some(function(p){ return typeof p === 'object'; })) { toast('Remove the photo that failed first.'); return Promise.reject(); }
+      var btn = document.getElementById('save'); btn.disabled = true; btn.textContent = 'Saving…';
+      return api('item/' + sku, {method: 'PUT', headers: {'content-type': 'application/json'},
+                                 body: JSON.stringify({record: draft, private: priv})})
+        .then(function(r){
+          LIVE[sku] = {record: r.record, private: priv, updated: r.record.updated};
+          dirty = false;
+          if (filed){
+            INBOX = INBOX.filter(function(x){ return x.id !== filed.id; });
+            api('inbox/' + filed.id, {method: 'POST', headers: {'content-type': 'application/json'}, body: JSON.stringify({sku: sku})});
+            filing = null; filed = null;
+          }
+          toast('Saved. It is on the site now.');
+        }, function(e){ toast('Not saved: ' + e.message, 6000); throw e; })
+        .then(function(){ btn.disabled = false; btn.textContent = 'Save'; }, function(e){ btn.disabled = false; btn.textContent = 'Save'; throw e; });
+    }
+    document.getElementById('save').addEventListener('click', function(){ save().catch(function(){}); });
+    document.getElementById('next').addEventListener('click', function(){
+      var go = function(){
+        var lot = LIQ_ITEMS.filter(function(x){ return x[1] === it[1]; });
+        var i = lot.indexOf(it), nx = null;
+        for (var j = i + 1; j < lot.length; j++) if (stateOf(lot[j][0]) === 'todo'){ nx = lot[j]; break; }
+        if (nx) location.hash = 'item/' + nx[0]; else { toast('No more items without photos in this lot.'); location.hash = ''; }
+      };
+      if (dirty) save().then(go, function(){}); else go();
+    });
+  }
+
+  if (key) start(); else login('');
+})();
+</script>
+</body>
+</html>

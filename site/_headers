@@ -1,0 +1,31 @@
+# Cloudflare Pages response headers. Copied into dist/ by build/package.py.
+# https://developers.cloudflare.com/pages/configuration/headers/
+
+/*
+  X-Content-Type-Options: nosniff
+  Referrer-Policy: strict-origin-when-cross-origin
+  X-Frame-Options: SAMEORIGIN
+  Permissions-Policy: camera=(), microphone=(), geolocation=()
+
+# Item photos can be swapped under the same file name, so browsers keep
+# them for a day rather than forever. Cloudflare's edge still revalidates.
+/assets/items/*
+  Cache-Control: public, max-age=86400
+
+/assets/*.png
+  Cache-Control: public, max-age=604800
+
+# Pages, prices and item details change without a rename, so these are
+# always checked for a newer copy (this is the Pages default, stated here
+# so nobody "optimises" it later and leaves stale prices up).
+/data/*
+  Cache-Control: public, max-age=0, must-revalidate
+/assets/*.js
+  Cache-Control: public, max-age=0, must-revalidate
+/assets/*.css
+  Cache-Control: public, max-age=0, must-revalidate
+
+# The phone editor: never indexed, never cached.
+/admin*
+  X-Robots-Tag: noindex, nofollow
+  Cache-Control: no-store

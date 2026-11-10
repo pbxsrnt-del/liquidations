@@ -1,0 +1,196 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Item — Surplus & Asset Liquidations Warehouse Outlet</title>
+<meta name="description" content="Photos, size, condition and price for one item at the warehouse outlet.">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Surplus &amp; Asset Liquidations Warehouse Outlet">
+<meta property="og:title" content="Item — Surplus &amp; Asset Liquidations Warehouse Outlet">
+<meta property="og:description" content="Photos, size, condition and price for one item at the warehouse outlet.">
+<meta property="og:image" content="https://liquidations.city/assets/stamp-ink.png">
+<meta name="twitter:card" content="summary">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Anton&family=Barlow:wght@400;500;600&family=Barlow+Condensed:wght@500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/site.css">
+<link rel="icon" href="assets/stamp-ink.png">
+<script>document.documentElement.className+=" js";</script>
+</head>
+<body>
+
+<header class="topbar">
+  <div class="wrap">
+    <a class="brandmark" href="index.html">
+      <img src="assets/stamp-light.png" alt="Surplus &amp; Asset Liquidations Warehouse Outlet">
+      <span>Wichita, KS</span>
+    </a>
+    <nav class="nav" aria-label="Main">
+      <a href="shop.html" class="is-current">Shop</a>
+      <a href="index.html#buy">How to buy</a>
+      <a href="index.html#visit">Visit us</a>
+      <a href="manifest.html">Full manifest</a>
+    </nav>
+  </div>
+</header>
+
+<main class="band" id="page" style="padding-top:clamp(24px,4vw,48px)">
+  <div class="wrap">
+    <p class="tiny backlink"><a href="shop.html" id="back">&larr; Back to the shop</a></p>
+    <div id="item"></div>
+  </div>
+</main>
+
+<script src="assets/items.js"></script>
+<script src="data/details.js"></script>
+<script src="data/live.js"></script>
+<script src="assets/liq.js"></script>
+
+<script>
+(function(){
+  var sku = (new URLSearchParams(location.search)).get('sku') || '';
+  var el = document.getElementById('item');
+  var it = LIQ.bySku(sku);
+  if (document.referrer.indexOf('/manifest') >= 0){
+    var back = document.getElementById('back');
+    back.href = 'manifest.html'; back.innerHTML = '&larr; Back to the manifest';
+  }
+
+  if(!it){
+    el.innerHTML = '<h1 style="margin:22px 0 18px">We could not find that item</h1>'+
+      '<p class="lede">It may have sold and been taken down, or the link was cut short.</p>'+
+      '<p style="margin-top:26px"><a class="btn" href="shop.html">Shop what is here</a></p>';
+    return;
+  }
+
+  var d = LIQ.detail(sku), s = LIQ.state(sku), p = LIQ.price(it), lot = LIQ.lot(it);
+  var photos = (d.photos && d.photos.length) ? d.photos : [];
+  var name = LIQ.title(it);
+  document.title = name + ' — Liquidations Warehouse Outlet';
+
+  /* prev / next through the shop when this is a shop item, else through the lot */
+  var list = LIQ.shopItems(false), i = list.indexOf(it);
+  if (i < 0){ list = LIQ_ITEMS.filter(function(x){ return x[1] === it[1]; }); i = list.indexOf(it); }
+  var prev = i > 0 ? list[i-1] : null, next = i < list.length-1 ? list[i+1] : null;
+
+  var gallery = photos.length
+    ? '<div class="gallery"><img id="lead" src="'+LIQ.esc(photos[0])+'" alt="'+LIQ.esc(name)+'">'+
+      (photos.length>1 ? '<div class="thumbs">'+photos.map(function(src,n){
+        return '<button type="button" aria-label="Photo '+(n+1)+'" data-src="'+LIQ.esc(src)+'"'+(n?'':' class="on"')+
+               '><img src="'+LIQ.esc(src)+'" alt=""></button>'; }).join('')+'</div>' : '')+'</div>'
+    : '<div class="gallery gallery--empty"><div class="noshot">'+
+      '<p class="tiny" style="letter-spacing:.2em;margin:0 0 8px">Not photographed yet</p>'+
+      '<p style="margin:0;max-width:26ch">It is on the floor. Ask for item <b class="mono">'+LIQ.esc(sku)+'</b> and we will pull it.</p></div></div>';
+
+  var facts = [
+    ['Brand', LIQ.esc(d.brand)], ['Size', LIQ.esc(d.size)], ['Color', LIQ.esc(d.color)],
+    ['Condition', LIQ.esc(d.condition || 'Like new')],
+    ['Available', it[3] > 1 && s !== 'sold' ? it[3] + ' of these' : ''],
+    ['Item #', '<span class="mono">'+LIQ.esc(sku)+'</span>']
+  ].filter(function(f){ return f[1]; })
+   .map(function(f){ return '<dt>'+f[0]+'</dt><dd>'+f[1]+'</dd>'; }).join('');
+
+  var priceBlock = s === 'sold'
+    ? '<div class="pricebox pricebox--sold"><span class="tiny">This one has sold</span>'+
+      '<b>Sold</b><span class="ticket">Similar pieces may still be in the <a href="shop.html?cat='+lot.cat+'">shop</a>.</span></div>'
+    : '<div class="pricebox">'+
+      '<span class="tiny">Our price</span>'+
+      '<b>'+LIQ.whole(p)+'</b>'+
+      '<span class="ticket">Store price <s>'+LIQ.usd(it[4])+'</s> &middot; you save '+LIQ.saving(it)+'%'+
+        (LIQ.marked(it) ? ' &middot; marked down from '+LIQ.whole(LIQ.standard(it)) : '')+
+      '</span></div>';
+
+  var share = navigator.share ? '<button type="button" class="btn btn--ghost btn--sm" id="share">Share</button>' :
+    '<button type="button" class="btn btn--ghost btn--sm" id="share">Copy link</button>';
+
+  el.innerHTML =
+    '<div class="itemgrid">'+
+      gallery+
+      '<div>'+
+        '<p class="eyebrow">'+LIQ.esc(lot.shop || it[5])+'</p>'+
+        '<h1 class="itemtitle">'+LIQ.esc(name)+'</h1>'+
+        (s === 'hold' ? '<div class="statusrow">'+LIQ.chip(s)+' <span class="tiny" style="color:#5A6B80">Someone has asked us to hold this</span></div>' : '')+
+        priceBlock+
+        (d.notes ? '<p class="lede">'+LIQ.esc(d.notes)+'</p>' : '')+
+        '<dl class="facts">'+facts+'</dl>'+
+        '<div class="getit">'+
+          '<h2>How to get it</h2>'+
+          '<p>Come to the warehouse in Wichita and show this page, or tell us item <b class="mono">'+LIQ.esc(sku)+'</b>. '+
+          LIQ.esc(lot.note || '')+'</p>'+
+          '<p class="tiny" style="color:#5A6B80;margin:10px 0 0">Sold as-is &middot; all sales final &middot; look it over before you pay</p>'+
+          '<p style="margin:16px 0 0;display:flex;gap:12px;flex-wrap:wrap"><a class="btn btn--sm" href="index.html#visit">Hours and directions</a>'+share+'</p>'+
+        '</div>'+
+        '<details class="resale"><summary>Manifest details, for resellers</summary><dl class="facts">'+
+          '<dt>Lot</dt><dd class="mono">'+LIQ.esc(it[1])+'</dd>'+
+          '<dt>Manifest line</dt><dd class="mono">'+LIQ.esc(it[2])+'</dd>'+
+          '<dt>Department</dt><dd>'+LIQ.esc(it[5] + (it[6] ? ' — ' + it[6] : ''))+'</dd>'+
+          '<dt>Units on line</dt><dd>'+it[3]+'</dd>'+
+        '</dl></details>'+
+      '</div>'+
+    '</div>'+
+    '<nav class="itemnav">'+
+      (prev ? '<a href="item.html?sku='+prev[0]+'">&larr; '+LIQ.esc(LIQ.title(prev))+'</a>' : '<span></span>')+
+      (next ? '<a href="item.html?sku='+next[0]+'">'+LIQ.esc(LIQ.title(next))+' &rarr;</a>' : '<span></span>')+
+    '</nav>';
+
+  var lead = document.getElementById('lead');
+  el.querySelectorAll('.thumbs button').forEach(function(b){
+    b.addEventListener('click', function(){
+      lead.src = b.dataset.src;
+      el.querySelectorAll('.thumbs button').forEach(function(x){ x.classList.remove('on'); });
+      b.classList.add('on');
+    });
+  });
+  var sh = document.getElementById('share');
+  sh.addEventListener('click', function(){
+    var url = location.origin + location.pathname + '?sku=' + sku;
+    if (navigator.share) { navigator.share({title: name, text: name + ' — ' + LIQ.whole(p), url: url}).catch(function(){}); return; }
+    (navigator.clipboard ? navigator.clipboard.writeText(url) : Promise.reject()).then(function(){
+      sh.textContent = 'Link copied';
+    }, function(){ prompt('Copy this link', url); });
+  });
+})();
+</script>
+
+<footer class="foot">
+  <div class="wrap">
+    <div class="foot-grid">
+      <div style="max-width:320px">
+        <img src="assets/stamp-light.png" alt="Surplus &amp; Asset Liquidations Warehouse Outlet" style="width:100%;max-width:280px;display:block;margin-bottom:18px">
+        <p style="font-size:14.5px;margin:0">Surplus, returns and asset lots, bought by the pallet and sold off the floor in Wichita, Kansas.</p>
+      </div>
+      <div>
+        <p class="eyebrow eyebrow--pale">Three doors, one warehouse</p>
+        <ul class="doors">
+          <li><b>liquidations.city</b><span>The storefront. What is on the floor right now, and the manifest behind it.</span></li>
+          <li><b>liquidations.club</b><span>The buyer list. New lots posted here before they hit the floor.</span></li>
+          <li><b>liquidations.zone</b><span>Pallet and truckload sales for resellers and flea-market sellers.</span></li>
+        </ul>
+      </div>
+    </div>
+    <div class="foot-legal">
+      <span>&copy; 2026 Surplus &amp; Asset Liquidations Warehouse Outlet</span>
+      <span>All goods sold as-is. Manifest retail is the original store ticket, not an appraisal.</span>
+    </div>
+  </div>
+</footer>
+
+<script>
+(function(){
+  var rm = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  var hits = document.querySelectorAll('.hit');
+  if (rm || !('IntersectionObserver' in window)) {
+    hits.forEach(function(el){ el.classList.add('in'); });
+    return;
+  }
+  var io = new IntersectionObserver(function(entries){
+    entries.forEach(function(e){
+      if (e.isIntersecting){ e.target.classList.add('in'); io.unobserve(e.target); }
+    });
+  }, {rootMargin:'0px 0px -12% 0px'});
+  hits.forEach(function(el){ io.observe(el); });
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,83 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Not found — Surplus & Asset Liquidations Warehouse Outlet</title>
+<meta name="description" content="That page is not on the floor.">
+<meta name="robots" content="noindex">
+<base href="/">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Anton&family=Barlow:wght@400;500;600&family=Barlow+Condensed:wght@500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/site.css">
+<link rel="icon" href="assets/stamp-ink.png">
+<script>document.documentElement.className+=" js";</script>
+</head>
+<body>
+
+<header class="topbar">
+  <div class="wrap">
+    <a class="brandmark" href="index.html">
+      <img src="assets/stamp-light.png" alt="Surplus &amp; Asset Liquidations Warehouse Outlet">
+      <span>Wichita, KS</span>
+    </a>
+    <nav class="nav" aria-label="Main">
+      <a href="shop.html">Shop</a>
+      <a href="index.html#buy">How to buy</a>
+      <a href="index.html#visit">Visit us</a>
+      <a href="manifest.html">Full manifest</a>
+    </nav>
+  </div>
+</header>
+
+<main class="band" id="page">
+  <div class="wrap">
+    <p class="eyebrow">404 &middot; Not on the floor</p>
+    <h1 style="margin:22px 0 18px">Nothing at this address</h1>
+    <p class="lede">The page may have moved, or the link was mistyped. Items that sell get taken down, so the piece you were after may be gone. Everything still available is in the shop.</p>
+    <p style="margin-top:26px"><a class="btn" href="shop.html">Shop what is here</a> <a class="btn btn--ghost" href="index.html">Back to the front</a></p>
+  </div>
+</main>
+
+<footer class="foot">
+  <div class="wrap">
+    <div class="foot-grid">
+      <div style="max-width:320px">
+        <img src="assets/stamp-light.png" alt="Surplus &amp; Asset Liquidations Warehouse Outlet" style="width:100%;max-width:280px;display:block;margin-bottom:18px">
+        <p style="font-size:14.5px;margin:0">Surplus, returns and asset lots, bought by the pallet and sold off the floor in Wichita, Kansas.</p>
+      </div>
+      <div>
+        <p class="eyebrow eyebrow--pale">Three doors, one warehouse</p>
+        <ul class="doors">
+          <li><b>liquidations.city</b><span>The storefront. What is on the floor right now, and the manifest behind it.</span></li>
+          <li><b>liquidations.club</b><span>The buyer list. New lots posted here before they hit the floor.</span></li>
+          <li><b>liquidations.zone</b><span>Pallet and truckload sales for resellers and flea-market sellers.</span></li>
+        </ul>
+      </div>
+    </div>
+    <div class="foot-legal">
+      <span>&copy; 2026 Surplus &amp; Asset Liquidations Warehouse Outlet</span>
+      <span>All goods sold as-is. Manifest retail is the original store ticket, not an appraisal.</span>
+    </div>
+  </div>
+</footer>
+
+<script>
+(function(){
+  var rm = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  var hits = document.querySelectorAll('.hit');
+  if (rm || !('IntersectionObserver' in window)) {
+    hits.forEach(function(el){ el.classList.add('in'); });
+    return;
+  }
+  var io = new IntersectionObserver(function(entries){
+    entries.forEach(function(e){
+      if (e.isIntersecting){ e.target.classList.add('in'); io.unobserve(e.target); }
+    });
+  }, {rootMargin:'0px 0px -12% 0px'});
+  hits.forEach(function(el){ io.observe(el); });
+})();
+</script>
+</body>
+</html>
